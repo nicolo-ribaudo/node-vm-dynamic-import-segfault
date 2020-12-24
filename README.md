@@ -1,8 +1,8 @@
-Node.js segfault when using Jest and `import()`.
+Node.js segfault when using `vm` and `import()`.
 
-First run `npm ci` to install dependencies, then
+Run
 ```
-node --experimental-vm-modules ./node_modules/.bin/jest -i __tests__/index.js
+node --experimental-vm-modules ./run.js
 ```
 to reproduce the segfault. If you don't see the segault, try 2-3 times.
 
