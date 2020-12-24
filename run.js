@@ -1,28 +1,17 @@
-const path = require("path");
-const fs = require("fs");
 const vm = require("vm");
 
-runInVM(path.resolve("./source/index.js"));
+new vm.Script(`
+  (async function () {
+    // If you remove this, it doesn't crash
+    console.log("Started");
 
-function runInVM(filename) {
-  const dirname = path.dirname(filename);
-  const code = fs.readFileSync(filename, "utf8");
+    // Wait a bit, otherwise the segfault doesn't happen
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
-  return new vm.Script(`(async function (require) {${code} })`, {
-    displayErrors: true,
-    filename,
-    async importModuleDynamically(specifier) {
-      const filename = require.resolve(specifier, { paths: [dirname] });
-
-      console.log("import()", specifier);
-
-      let mod = new vm.SourceTextModule(fs.readFileSync(filename, "utf8"));
-      await mod.link(() => {});
-      await mod.evaluate();
-      return mod;
-    },
-  }).runInThisContext()(function _require(specifier) {
-    const filename = require.resolve(specifier, { paths: [dirname] });
-    return runInVM(filename);
-  });
-}
+    console.log(await import("./dep"));
+  })()
+`, {
+  async importModuleDynamically() {
+    throw new Error("\n\n\nIf you see this error, everything is ok!\n\n\n");
+  },
+}).runInThisContext();
